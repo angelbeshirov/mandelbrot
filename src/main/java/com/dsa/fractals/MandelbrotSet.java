@@ -1,15 +1,11 @@
 package com.dsa.fractals;
 
-import org.apache.commons.math3.complex.Complex;
-
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
 public class MandelbrotSet {
 
-    private static final int MAX_ITERATIONS = 256;
-    private static final double RADIUS = 2;
-    private static final double DIVERGENCE = RADIUS * RADIUS;
+    public static final int MAX_ITERATIONS = 700;
 
     private BufferedImage bufferedImage;
     private int width;
@@ -136,38 +132,6 @@ public class MandelbrotSet {
 
     public void generate() throws Exception {
         Util.exportImage(bufferedImage, outputName);
-    }
-
-    private double mapToReal(final int x) {
-        final double range = xLimitUpper - xLimitLower;
-        return x * (range / width) + xLimitLower;
-    }
-
-    private double mapToImaginary(final int y) {
-        final double range = yLimitUpper - yLimitLower;
-        return y * (range / height) + yLimitLower;
-    }
-
-    public void calculateChunk(final Chunk chunk) {
-        for (int row = chunk.getStartHeight(); row < chunk.getEndHeight(); row++) {
-            for (int col = 0; col < chunk.getWidth(); col++) { // this can be changed
-                final double cReal = mapToReal(col);
-                final double cImaginary = mapToImaginary(row);
-
-                Complex z = new Complex(0, 0);
-                final Complex c = new Complex(cReal, cImaginary);
-
-                int iterationCounter = MAX_ITERATIONS;
-                while (z.getReal() * z.getReal() + z.getImaginary() * z.getImaginary() <= DIVERGENCE && iterationCounter-- >= 0) {
-                    z = c.multiply(z.cos());
-                }
-                if (iterationCounter >= 0) {
-                    bufferedImage.setRGB(col, row, colors[iterationCounter]);
-                } else {
-                    bufferedImage.setRGB(col, row, 0x000000);
-                }
-            }
-        }
     }
 
     @Override

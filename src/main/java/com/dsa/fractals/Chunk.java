@@ -4,12 +4,10 @@ public class Chunk {
 
     private int startHeight;
     private int endHeight;
-    private int width;
 
-    Chunk(final int startHeight, final int endHeight, final int width) {
+    Chunk(final int startHeight, final int endHeight) {
         this.startHeight = startHeight;
         this.endHeight = endHeight;
-        this.width = width;
     }
 
     public int getStartHeight() {
@@ -20,16 +18,11 @@ public class Chunk {
         return endHeight;
     }
 
-    public int getWidth() {
-        return width;
-    }
-
     @Override
     public String toString() {
         return "Chunk{" +
                 "startHeight=" + startHeight +
                 ", endHeight=" + endHeight +
-                ", width=" + width +
                 '}';
     }
 }

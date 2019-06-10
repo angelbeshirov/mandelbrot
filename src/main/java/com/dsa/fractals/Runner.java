@@ -16,18 +16,18 @@ public class Runner {
         final List<Chunk> chunks = new ArrayList<>();
         final MandelbrotSet mandelbrotSet = initMandelbrotSet(args);
         System.out.println(mandelbrotSet.toString());
-        final int chunksSize = mandelbrotSet.getMaxThreads() * mandelbrotSet.getGranularity();
-        final int step = (mandelbrotSet.getHeight() + chunksSize - 1) / (chunksSize); // this is needed for rounding up the integer division
+//        final int chunksSize = mandelbrotSet.getMaxThreads() * mandelbrotSet.getGranularity();
+//        final int step = (mandelbrotSet.getHeight() + chunksSize - 1) / (chunksSize); // this is needed for rounding up the integer division
 
-        int part = 0;
-        while (part + step <= mandelbrotSet.getHeight()) {
-            chunks.add(new Chunk(part, part + step, mandelbrotSet.getWidth()));
-            part += step;
-        }
-
-        if (part != mandelbrotSet.getHeight()) {
-            chunks.add(new Chunk(part, mandelbrotSet.getHeight(), mandelbrotSet.getWidth()));
-        }
+//        int part = 0;
+//        while (part + step <= mandelbrotSet.getHeight()) {
+//            chunks.add(new Chunk(part, part + step));
+//            part += step;
+//        }
+//
+//        if (part != mandelbrotSet.getHeight()) {
+//            chunks.add(new Chunk(part, mandelbrotSet.getHeight()));
+//        }
 
         final ExecutorService executorService = Executors.newFixedThreadPool(mandelbrotSet.getMaxThreads());
         for (int i = 0; i < mandelbrotSet.getMaxThreads(); i++) {
