@@ -8,26 +8,20 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * The main class of the application, parses the command-line arguments,
+ * splits the image into chunks, starts the threads and exports the image.
+ */
 public class Runner {
 
     public static void main(final String[] args) throws Exception {
         final long start = System.currentTimeMillis();
 
-        final List<Chunk> chunks = new ArrayList<>();
         final MandelbrotSet mandelbrotSet = initMandelbrotSet(args);
-        System.out.println(mandelbrotSet.toString());
-//        final int chunksSize = mandelbrotSet.getMaxThreads() * mandelbrotSet.getGranularity();
-//        final int step = (mandelbrotSet.getHeight() + chunksSize - 1) / (chunksSize); // this is needed for rounding up the integer division
+        if (!mandelbrotSet.isQuiet())
+            System.out.println(mandelbrotSet.toString());
 
-//        int part = 0;
-//        while (part + step <= mandelbrotSet.getHeight()) {
-//            chunks.add(new Chunk(part, part + step));
-//            part += step;
-//        }
-//
-//        if (part != mandelbrotSet.getHeight()) {
-//            chunks.add(new Chunk(part, mandelbrotSet.getHeight()));
-//        }
+        List<Chunk> chunks = makeChunks(mandelbrotSet);
 
         final ExecutorService executorService = Executors.newFixedThreadPool(mandelbrotSet.getMaxThreads());
         for (int i = 0; i < mandelbrotSet.getMaxThreads(); i++) {
@@ -40,12 +34,57 @@ public class Runner {
         System.out.println("Total time elapsed: " + (System.currentTimeMillis() - start));
     }
 
+    /**
+     * Generates list of {@link Chunk}s based on the granularity, number of threads, width
+     * and height of the image. In general each chunk will be with width imageWidth/(numberOfThreads * granularity)
+     * and height imageHeight/(numberOfThreads * granularity)
+     *
+     * @param mandelbrotSet contains the problem configuration
+     * @return the generated list of chunks
+     */
+    private static List<Chunk> makeChunks(final MandelbrotSet mandelbrotSet) {
+        int granularity = mandelbrotSet.getGranularity();
+        final List<Chunk> chunks = new ArrayList<>();
+        final int maxThreads = mandelbrotSet.getMaxThreads();
+        int i;
+        int j;
+        int width = mandelbrotSet.getWidth();
+        int height = mandelbrotSet.getHeight();
+
+        // round UP integer division
+        int stepHeight = (mandelbrotSet.getHeight() + maxThreads * granularity - 1) / (maxThreads * granularity);
+        int stepWidth = (mandelbrotSet.getWidth() + maxThreads * granularity - 1) / (maxThreads * granularity);
+
+        for (i = 0; i + stepHeight < height; i += stepHeight) {
+            for (j = 0; j + stepWidth < width; j += stepWidth) {
+                chunks.add(new Chunk(i, i + stepHeight, j, j + stepWidth));
+            }
+            chunks.add(new Chunk(i, i + stepHeight, j, width));
+        }
+        int k;
+        for (k = 0; k + stepWidth < width; k += stepWidth) {
+            chunks.add(new Chunk(i, height, k, k + stepWidth));
+        }
+        chunks.add(new Chunk(i, height, k, width));
+
+        for (Chunk chunk : chunks) {
+            System.out.println(chunk);
+        }
+        return chunks;
+    }
+
+
+    /**
+     * Shuts down the executor service.
+     *
+     * @param executorService the {@link ExecutorService} to shutdown
+     */
     private static void shutdownAndAwaitTermination(ExecutorService executorService) {
         executorService.shutdown();
         try {
-            if (!executorService.awaitTermination(120, TimeUnit.SECONDS)) {
+            if (!executorService.awaitTermination(300, TimeUnit.SECONDS)) {
                 executorService.shutdownNow();
-                if (!executorService.awaitTermination(120, TimeUnit.SECONDS)) {
+                if (!executorService.awaitTermination(300, TimeUnit.SECONDS)) {
                     System.err.println("ExecutorService did not terminate");
                 }
             }
@@ -55,13 +94,20 @@ public class Runner {
         }
     }
 
+    /**
+     * Initializes {@link MandelbrotSet} based on the command-line arguments passed by the user.
+     *
+     * @param args the array containing the command-line arguments
+     * @return initialized {@link MandelbrotSet} object.
+     * @throws ParseException if there was error while parsing the arguments
+     */
     private static MandelbrotSet initMandelbrotSet(final String[] args) throws ParseException {
         final Options options = new Options();
         options.addOption("s", "size", true, "Sets the width and height of the output image");
         options.addOption("r", "rect", true, "Sets the part of the plane for which the fractal will be created");
         options.addOption("t", "tasks", true, "Sets the number of threads which will be used");
         options.addOption("o", "output", true, "Sets the output name of the generated image");
-        options.addOption("g", "gran", true, "Sets the granularity of image partitioning");
+        options.addOption("g", "gran", true, "Sets the granularity of the image partitioning");
         options.addOption("q", "quiet", false, "Sets the application in quiet mode");
 
         final CommandLineParser parser = new DefaultParser();

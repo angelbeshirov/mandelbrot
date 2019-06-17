@@ -3,9 +3,15 @@ package com.dsa.fractals;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
+/**
+ * Encapsulates mandelbrot related configuration fields, the coloring array and
+ * the output buffered image object.
+ *
+ * @author angel.beshirov
+ */
 public class MandelbrotSet {
 
-    public static final int MAX_ITERATIONS = 700;
+    public static final int MAX_ITERATIONS = 1024;
 
     private BufferedImage bufferedImage;
     private int width;
@@ -137,8 +143,7 @@ public class MandelbrotSet {
     @Override
     public String toString() {
         return "MandelbrotSet{" +
-                "bufferedImage=" + bufferedImage +
-                ", width=" + width +
+                "width=" + width +
                 ", height=" + height +
                 ", xLimitLower=" + xLimitLower +
                 ", xLimitUpper=" + xLimitUpper +
@@ -147,6 +152,7 @@ public class MandelbrotSet {
                 ", maxThreads=" + maxThreads +
                 ", outputName='" + outputName + '\'' +
                 ", isQuiet=" + isQuiet +
+                ", granularity=" + granularity +
                 '}';
     }
 }
